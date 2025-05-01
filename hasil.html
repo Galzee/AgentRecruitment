@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Tes</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Gaya dari halaman test -->
+    <script>
+        // Fungsi untuk mengambil data dari localStorage dan menampilkan ke halaman
+        window.onload = function() {
+        // Ambil data dari localStorage
+        const agentType = localStorage.getItem("agentType");
+        const agentRank = localStorage.getItem("agentRank");
+        const agentEvaluation = localStorage.getItem("agentEvaluation");
+        const totalScore = localStorage.getItem("totalScore");
+
+        let scores = {};
+        try {
+            const rawScores = JSON.parse(localStorage.getItem("scores")) || {};
+            // Normalisasi kapitalisasi key
+            for (const [key, value] of Object.entries(rawScores)) {
+                const fixedKey = key.charAt(0).toUpperCase() + key.slice(1).toLowerCase();
+                scores[fixedKey] = (scores[fixedKey] || 0) + (value || 0);
+            }
+        } catch (e) {
+            scores = {};
+        }
+
+        // Jika data tidak ada, redirect ke halaman tes
+        if (!agentType || !agentRank) {
+            alert("Silakan isi tes terlebih dahulu!");
+            window.location.href = "index.html";
+            return;
+        }
+
+        // Tampilkan data utama
+        document.getElementById("totalScore").textContent = totalScore;
+        document.getElementById("agentType").textContent = agentType;
+        document.getElementById("agentRank").textContent = agentRank;
+        document.getElementById("agentEvaluation").textContent = agentEvaluation;
+
+
+        // Tampilkan skor per tipe (jika ada)
+      const scoresContainer = document.getElementById("scores");
+       if (Object.keys(scores).length > 0) {
+      let scoreText = "";
+     for (const [type, value] of Object.entries(scores)) {
+        scoreText += `${type}: ${value}<br>`;
+      }
+     scoresContainer.innerHTML = scoreText;
+      } else {
+     scoresContainer.innerHTML = "Tidak ada skor detail.";
+     }
+    };
+
+        // Fungsi untuk mengirim hasil ke WhatsApp
+        function sendToWhatsApp() {
+    const agentType = document.getElementById('agentType').textContent;
+    const agentRank = document.getElementById('agentRank').textContent;
+    const agentEvaluation = document.getElementById('agentEvaluation').textContent;
+    const totalScore = document.getElementById('totalScore').textContent;
+
+    // Ambil dan format data skor per kategori
+    let formattedScores = "";
+    try {
+        const rawScores = JSON.parse(localStorage.getItem("scores")) || {};
+        for (const [key, value] of Object.entries(rawScores)) {
+            const label = key.charAt(0).toUpperCase() + key.slice(1).toLowerCase();
+            formattedScores += `- ${label}: ${value}\n`;
+        }
+    } catch (e) {
+        formattedScores = "- (Data skor tidak tersedia)";
+    }
+
+    const timestamp = new Date().toLocaleString('id-ID');
+    const kodeUnik = `AG-${Math.floor(1000 + Math.random() * 9000)}`; // AG-1234
+
+    const message = `
+🛰️ *HASIL RESMI TES AGEN RAHASIA* 🛰️
+────────────────────
+🗓️ *Waktu:* \`${timestamp}\`
+🔐 *Kode Agen:* \`${kodeUnik}\`
+────────────────────
+🏅 *Total Skor:* \`${totalScore}\`
+🕵️‍♂️ *Tipe Agen:* \`${agentType}\`
+🎖️ *Peringkat:* \`${agentRank}\`
+────────────────────
+💯 *Rincian Skor:*
+\`\`\`
+${formattedScores}
+\`\`\`
+🧾 *Evaluasi:*
+\`\`\`
+${agentEvaluation}
+\`\`\`
+────────────────────
+⛔ *Jangan ubah isi pesan ini. Data sudah terenkripsi.*`;
+
+    const phoneNumber = "6281264414431"; // Nomor target
+    const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+}
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <center>
+            <h1>Statistik Final</h1>
+        </center>
+
+        <div class="result-box">
+            <p><strong>🏅Total Poin: <br>
+            </strong> <span id="totalScore">0</span></p>
+            <p><strong>🕵️Tipe Agent: <br>
+            </strong> <span id="agentType">-</span></p>
+            <p><strong>👁️Rank: <br>
+            </strong> <span id="agentRank">-</span></p>
+            <p><strong>📄Deskripsi: <br>
+            </strong> <span id="agentEvaluation">-</span></p>
+            <p><strong>💯Scores: <br>
+            </strong> <span id="scores"></span></p><!-- Untuk skor per tipe -->
+        </div>
+        <center>
+            <button class="submit-btn" onclick="sendToWhatsApp()">Kirim ke WhatsApp</button>
+        </center>
+
+    </div>
+</body>
+</html>
